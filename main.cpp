@@ -3,6 +3,8 @@
 #include <vector>
 
 #include "findSquares.hpp"
+#include "homography.hpp"
+#include "image.hpp"
 
 using namespace std;
 
@@ -51,14 +53,35 @@ int main(int argc, char** argv) {
   cv::Mat dst;
   cv::warpPerspective(src, dst, h.inv(), cv::Size(1200, 600));
 
-  // cv::imshow("r", dst);
+  Image left(dst(cv::Rect(0, 0, 600, 600)));
+  Image right(dst(cv::Rect(600, 0, 600, 600)));
 
-  cv::Mat left = dst(cv::Rect(0, 0, 600, 600));
-  cv::Mat right = dst(cv::Rect(600, 0, 600, 600));
+  left.detectKeyPoints();
+  right.detectKeyPoints();
 
-  cv::imshow("left", left);
-  cv::imshow("right", right);
+  cv::Mat H = getHomography(left, right);
 
-  //  drawSquares(src, squares[candiIndex]);
+  Image warped_left(
+      cv::Mat::zeros(right.image.rows, right.image.cols, CV_8UC3));
+  cv::warpPerspective(left.image, warped_left.image, H, right.image.size());
+
+  right.cvtToGray();
+  warped_left.cvtToGray();
+
+  cv::Mat binned_right;
+  cv::threshold(right.gray_image, binned_right, 0, 255,
+                CV_THRESH_BINARY | CV_THRESH_OTSU);
+
+  cv::Mat binned_warped_left;
+  cv::threshold(warped_left.gray_image, binned_warped_left, 0, 255,
+                CV_THRESH_BINARY | CV_THRESH_OTSU);
+
+  Image diff(cv::Mat::zeros(600, 600, 0));
+
+  cv::imshow("d", binned_warped_left);
+  cv::imshow("b", binned_right);
+  cv::bitwise_xor(binned_warped_left, binned_right, diff.image);
+  diff.show();
+
   cv::waitKey();
 }

@@ -1,4 +1,5 @@
 // ref:https://docs.opencv.org/4.0.1/db/d00/samples_2cpp_2squares_8cpp-example.html
+#pragma once
 #include <opencv2/opencv.hpp>
 using namespace cv;
 using namespace std;
