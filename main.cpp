@@ -73,6 +73,5 @@ int main(int argc, char** argv) {
   diff.show("diff");
 
   cv::imwrite("../output.png", diff.image);
-
   cv::waitKey();
 }
