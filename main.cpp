@@ -10,8 +10,12 @@ double calcDistance(cv::Point a, cv::Point b) {
   return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 }
 
-int main() {
-  cv::Mat src = cv::imread("../saize.png", 1);
+int main(int argc, char** argv) {
+  if (argc < 2) {
+    cout << "Input Image!!" << endl;
+    return 0;
+  }
+  cv::Mat src = cv::imread(argv[1], 1);
   cv::resize(src, src, cv::Size(0, 0), 0.3, 0.3);
   vector<vector<cv::Point>> squares;
 
