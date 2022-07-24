@@ -13,6 +13,8 @@ class Image {
   cv::Mat descriptors;
   cv::Ptr<cv::Feature2D> feature;
 
+  Image() {}
+
   Image(cv::Mat temp) {
     image = temp;
     original = temp;
