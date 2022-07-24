@@ -45,8 +45,8 @@ int main(int argc, char** argv) {
     }
   }
 
-  int a = 2400;
-  int b = 1200;
+  int a = 1800;
+  int b = 900;
   vector<cv::Point> pts_src{cv::Point2f(0, 0), cv::Point2f(a, 0),
                             cv::Point2f(a, b), cv::Point2f(0, b)};
   vector<cv::Point> pts_dst = squares[candiIndex];
@@ -67,31 +67,10 @@ int main(int argc, char** argv) {
       cv::Mat::zeros(right.image.rows, right.image.cols, CV_8UC3));
   cv::warpPerspective(left.image, warped_left.image, H, right.image.size());
 
-  right.cvtToGray();
-  warped_left.cvtToGray();
+  Image diff;
+  cv::absdiff(right.image, warped_left.image, diff.image);
 
-  Image diff1(right.gray_image - warped_left.gray_image);
-  Image diff2(warped_left.gray_image - right.gray_image);
-
-  diff1.show("diff1");
-  diff2.show("diff2");
-
-  cv::Mat binned_diff1;
-  cv::threshold(diff1.image, binned_diff1, 0, 255,
-                CV_THRESH_BINARY | CV_THRESH_OTSU);
-
-  cv::Mat binned_diff2;
-  cv::threshold(diff2.image, binned_diff2, 0, 255,
-                CV_THRESH_BINARY | CV_THRESH_OTSU);
-
-  cv::Mat tmp;
-  cv::bitwise_or(binned_diff1, binned_diff2, tmp);
-
-  const int itr = 0;  //回数お好みで調整
-  cv::erode(tmp, tmp, cv::Mat(), cv::Point(-1, -1), itr);
-  cv::dilate(tmp, tmp, cv::Mat(), cv::Point(-1, -1), itr);
-
-  cv::imshow("M", tmp);
+  diff.show("diff");
 
   cv::waitKey();
 }
