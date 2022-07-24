@@ -39,8 +39,22 @@ int main() {
     }
   }
 
-  // TODO:homography変換
+  vector<cv::Point> pts_src{cv::Point2f(0, 0), cv::Point2f(1200, 0),
+                            cv::Point2f(1200, 600), cv::Point2f(0, 600)};
+  vector<cv::Point> pts_dst = squares[candiIndex];
+  cv::Mat h = cv::findHomography(pts_src, pts_dst);
 
-  // drawSquares(src, squares[candiIndex]);
-  // cv::waitKey();
+  cv::Mat dst;
+  cv::warpPerspective(src, dst, h.inv(), cv::Size(1200, 600));
+
+  // cv::imshow("r", dst);
+
+  cv::Mat left = dst(cv::Rect(0, 0, 600, 600));
+  cv::Mat right = dst(cv::Rect(600, 0, 600, 600));
+
+  cv::imshow("left", left);
+  cv::imshow("right", right);
+
+  //  drawSquares(src, squares[candiIndex]);
+  cv::waitKey();
 }
