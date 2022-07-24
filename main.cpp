@@ -45,16 +45,18 @@ int main(int argc, char** argv) {
     }
   }
 
-  vector<cv::Point> pts_src{cv::Point2f(0, 0), cv::Point2f(1200, 0),
-                            cv::Point2f(1200, 600), cv::Point2f(0, 600)};
+  int a = 2400;
+  int b = 1200;
+  vector<cv::Point> pts_src{cv::Point2f(0, 0), cv::Point2f(a, 0),
+                            cv::Point2f(a, b), cv::Point2f(0, b)};
   vector<cv::Point> pts_dst = squares[candiIndex];
   cv::Mat h = cv::findHomography(pts_src, pts_dst);
 
   cv::Mat dst;
-  cv::warpPerspective(src, dst, h.inv(), cv::Size(1200, 600));
+  cv::warpPerspective(src, dst, h.inv(), cv::Size(a, b));
 
-  Image left(dst(cv::Rect(0, 0, 600, 600)));
-  Image right(dst(cv::Rect(600, 0, 600, 600)));
+  Image left(dst(cv::Rect(0, 0, b, b)));
+  Image right(dst(cv::Rect(b, 0, b, b)));
 
   left.detectKeyPoints();
   right.detectKeyPoints();
@@ -68,20 +70,28 @@ int main(int argc, char** argv) {
   right.cvtToGray();
   warped_left.cvtToGray();
 
-  cv::Mat binned_right;
-  cv::threshold(right.gray_image, binned_right, 0, 255,
+  Image diff1(right.gray_image - warped_left.gray_image);
+  Image diff2(warped_left.gray_image - right.gray_image);
+
+  diff1.show("diff1");
+  diff2.show("diff2");
+
+  cv::Mat binned_diff1;
+  cv::threshold(diff1.image, binned_diff1, 0, 255,
                 CV_THRESH_BINARY | CV_THRESH_OTSU);
 
-  cv::Mat binned_warped_left;
-  cv::threshold(warped_left.gray_image, binned_warped_left, 0, 255,
+  cv::Mat binned_diff2;
+  cv::threshold(diff2.image, binned_diff2, 0, 255,
                 CV_THRESH_BINARY | CV_THRESH_OTSU);
 
-  Image diff(cv::Mat::zeros(600, 600, 0));
+  cv::Mat tmp;
+  cv::bitwise_or(binned_diff1, binned_diff2, tmp);
 
-  cv::imshow("d", binned_warped_left);
-  cv::imshow("b", binned_right);
-  cv::bitwise_xor(binned_warped_left, binned_right, diff.image);
-  diff.show();
+  const int itr = 0;  //回数お好みで調整
+  cv::erode(tmp, tmp, cv::Mat(), cv::Point(-1, -1), itr);
+  cv::dilate(tmp, tmp, cv::Mat(), cv::Point(-1, -1), itr);
+
+  cv::imshow("M", tmp);
 
   cv::waitKey();
 }

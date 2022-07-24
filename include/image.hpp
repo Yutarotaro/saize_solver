@@ -6,8 +6,6 @@
 #include <vector>
 
 class Image {
-  std::string name;
-
  public:
   cv::Mat image, original, gray_image;
   // Homography計算用
@@ -18,7 +16,6 @@ class Image {
   Image(cv::Mat temp) {
     image = temp;
     original = temp;
-    name = "temp";
   }
 
   Image(std::string path, int color = cv::IMREAD_COLOR) {
@@ -28,12 +25,10 @@ class Image {
       throw 1;
     }
     image.copyTo(original);
-    name = path.substr(path.size() -
-                       9);  //暫定的に9にしてるだけで意味はこれっぽっちもない
   }
 
   //可視化用
-  void show() { cv::imshow(name, image); };
+  void show(std::string name = "tmp") { cv::imshow(name, image); };
 
   //特徴点計算
   void detectKeyPoints() {
