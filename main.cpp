@@ -3,6 +3,8 @@
 #include <vector>
 
 #include "findSquares.hpp"
+#include "homography.hpp"
+#include "image.hpp"
 
 using namespace std;
 
@@ -43,22 +45,34 @@ int main(int argc, char** argv) {
     }
   }
 
-  vector<cv::Point> pts_src{cv::Point2f(0, 0), cv::Point2f(1200, 0),
-                            cv::Point2f(1200, 600), cv::Point2f(0, 600)};
+  int a = 1800;
+  int b = 900;
+  vector<cv::Point> pts_src{cv::Point2f(0, 0), cv::Point2f(a, 0),
+                            cv::Point2f(a, b), cv::Point2f(0, b)};
   vector<cv::Point> pts_dst = squares[candiIndex];
   cv::Mat h = cv::findHomography(pts_src, pts_dst);
 
   cv::Mat dst;
-  cv::warpPerspective(src, dst, h.inv(), cv::Size(1200, 600));
+  cv::warpPerspective(src, dst, h.inv(), cv::Size(a, b));
 
-  // cv::imshow("r", dst);
+  Image left(dst(cv::Rect(0, 0, b, b)));
+  Image right(dst(cv::Rect(b, 0, b, b)));
 
-  cv::Mat left = dst(cv::Rect(0, 0, 600, 600));
-  cv::Mat right = dst(cv::Rect(600, 0, 600, 600));
+  left.detectKeyPoints();
+  right.detectKeyPoints();
 
-  cv::imshow("left", left);
-  cv::imshow("right", right);
+  cv::Mat H = getHomography(left, right);
 
-  //  drawSquares(src, squares[candiIndex]);
+  Image warped_left(
+      cv::Mat::zeros(right.image.rows, right.image.cols, CV_8UC3));
+  cv::warpPerspective(left.image, warped_left.image, H, right.image.size());
+
+  Image diff;
+  cv::absdiff(right.image, warped_left.image, diff.image);
+
+  diff.show("diff");
+
+  cv::imwrite("../output.png", diff.image);
+
   cv::waitKey();
 }
